@@ -1,4 +1,4 @@
-﻿open System
+open System
 
 type Tree =
     | Empty
@@ -16,13 +16,18 @@ module Tree =
         | Node(v, left, right) ->
             let acc1 = f acc v
             let acc2 = fold f acc1 left
-            fold f acc2 right
+            fold f acc2 right      
 
-let rec generateRandomTree depth (rng: Random) =
-    if depth <= 0 then Empty
-    else
-        let value = rng.Next(1, 100)
-        Node(value, generateRandomTree (depth - 1) rng, generateRandomTree (depth - 1) rng)
+let rec BTree (elements: int list) =
+    match elements with
+    | [] -> Empty
+    | _ ->
+        let midIndex = elements.Length / 2
+        let leftPart = elements |> List.take midIndex
+        let midValue = elements.[midIndex]
+        let rightPart = elements |> List.skip (midIndex + 1)
+        
+        Node(midValue, BTree leftPart, BTree rightPart)
 
 let rec printTree indent tree =
     match tree with
@@ -39,18 +44,20 @@ let containsDigit (targetDigit: int) (value: int) =
 [<EntryPoint>]
 let main _ =
     let rng = Random()
-    Console.OutputEncoding <- System.Text.Encoding.UTF8
     
-    printf "Введите глубину дерева: "
-    let depthInput = Console.ReadLine()
+    printf "Введите количество узлов в дереве: "
+    let input = Console.ReadLine()
     
-    match Int32.TryParse(depthInput) with
-    | (true, depth) ->
-        let myTree = generateRandomTree depth rng
+    match Int32.TryParse(input) with
+    | (true, n) ->
+        let sortedList = List.init n (fun _ -> rng.Next(1, 100))
+                         |> List.sort
+        
+        let myTree = BTree sortedList
         printfn "\nИсходное дерево:"
         printTree "" myTree
         
-        printf "\nВведите цифру, которую НЕ должны содержать элементы: "
+        printf "\nЦифра, которую НЕ должны содержать элементы: "
         let digitInput = Console.ReadLine()
         
         match Int32.TryParse(digitInput) with
@@ -64,7 +71,7 @@ let main _ =
                 ) 0
 
             printfn "\nРезультат:"
-            printfn "Количество элементов, не содержащих цифру %d: %d" digit count
+            printfn "Не содержит цифру %d: %d" digit count
             
         | _ -> printfn "Введена не цифра"
     | _ -> printfn "Введена не цифра"
